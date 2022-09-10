@@ -46,4 +46,23 @@ public class LineCounter extends AbstractCounter {
             int leftRow = left.getEnd().getRow();
             int rightRow = right.getStart().getRow();
             if (leftRow == rightRow)
-                return new Span
+                return new Span(left.getStart(), right.getEnd());
+            result.add(left);
+            return right;
+        }).ifPresent(result::add);
+        return result;
+    }
+
+    @Getter(AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    private static class Span {
+
+        Point start;
+        Point end;
+
+        public Span(Range range) {
+            this(range.getStartPoint(), range.getEndPoint());
+        }
+    }
+}
