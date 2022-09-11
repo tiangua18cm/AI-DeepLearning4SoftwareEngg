@@ -37,4 +37,59 @@ public class PythonBoilerplateEnumerator extends BoilerplateEnumerator {
                 return Boilerplate.HASHER;
             case "__get__":
             case "__getattr__":
-            
+                return Boilerplate.GETTER;
+            case "__set__":
+            case "__setattr__":
+                return Boilerplate.SETTER;
+            case "__del__":
+            case "__delattr__":
+                return Boilerplate.FINALIZER;
+            case "__eq__":
+            case "__ne__":
+            case "__lt__":
+            case "__le__":
+            case "__gt__":
+            case "__ge__":
+                return Boilerplate.COMPARISON;
+            case "__neg__":
+            case "__pos__":
+            case "__abs__":
+            case "__invert__":
+            case "__round__":
+            case "__floor__":
+            case "__ceil__":
+            case "__trunc__":
+                return Boilerplate.UNARY_ARITHMETIC;
+            case "__add__":
+            case "__sub__":
+            case "__mul__":
+            case "__div__":
+            case "__truediv__":
+            case "__floordiv__":
+            case "__mod__":
+            case "__pow__":
+            case "__lshift__":
+            case "__rshift__":
+            case "__and__":
+            case "__xor__":
+            case "__or__":
+                return Boilerplate.BINARY_ARITHMETIC;
+            case "__iadd__":
+            case "__isub__":
+            case "__imul__":
+            case "__imatmul__":
+            case "__itruediv__":
+            case "__ifloordiv__":
+            case "__imod__":
+            case "__ipow__":
+            case "__ilshift__":
+            case "__irshift__":
+            case "__iand__":
+            case "__ixor__":
+            case "__ior__":
+                return Boilerplate.AUGMENTED_ASSIGNMENT;
+            default:
+                return null;
+        }
+    }
+}
