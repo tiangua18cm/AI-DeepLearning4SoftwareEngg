@@ -43,4 +43,11 @@ public class JavaCallableDeclarationExtractor extends JavaExtractor {
     }
 
     @Override
-    protected N
+    protected Node getStartingNode(Tree tree) {
+        Node root = tree.getRootNode();
+        List<Node> declarations = root.getNamedChildren().stream()
+                .filter(JavaCallableDeclarationExtractor::isDeclaration)
+                .collect(Collectors.toUnmodifiableList());
+        return declarations.size() == 1 ? declarations.get(0) : root;
+    }
+}
