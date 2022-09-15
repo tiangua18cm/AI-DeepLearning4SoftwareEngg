@@ -7,33 +7,33 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 
-class JavaCharacterCounterTest extends JavaBaseTest {
+class JavaCodeTokenCounterTest extends JavaBaseTest {
 
-    private static final String message = "Total number of characters should be equal to the joined tree string without spaces!";
+    private static final String message = "Total number of code tokens should be equal to the number of input tokens without the comments!";
 
     @Test
     void countEmptyTest() {
-        Counter counter = new CharacterCounter();
+        Counter counter = new CodeTokenCounter();
         Assertions.assertEquals(0, counter.count());
         Assertions.assertEquals(0, counter.count(new HashSet<>()));
     }
 
     @Test
-    void countRootTest(){
-        Counter counter = new CharacterCounter();
+    void countRootTest() {
+        Counter counter = new CodeTokenCounter();
         Long actual = counter.count(tree.getRootNode());
-        // Remove 2 for the space in string and comment
-        Assertions.assertEquals(getJoinedTokens().length() - 2, actual, message);
+        // Remove 1 for the comment node
+        Assertions.assertEquals(getNodes().size() - 1, actual, message);
     }
 
     @Test
     void countChildrenTest() {
-        Counter counter = new CharacterCounter();
+        Counter counter = new CodeTokenCounter();
         Node root = tree.getRootNode();
         Node package_declaration = root.getChild(0);
         Node class_declaration = root.getChild(1);
         Long actual = counter.count(package_declaration, class_declaration);
-        // Remove 2 for the space in string and comment
-        Assertions.assertEquals(getJoinedTokens().length() - 2, actual, message);
+        // Remove 1 for the comment node
+        Assertions.assertEquals(getNodes().size() - 1, actual, message);
     }
 }
