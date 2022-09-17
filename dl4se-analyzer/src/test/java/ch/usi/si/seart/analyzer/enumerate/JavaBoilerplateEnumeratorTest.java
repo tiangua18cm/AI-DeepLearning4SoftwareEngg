@@ -36,3 +36,25 @@ class JavaBoilerplateEnumeratorTest extends JavaBaseTest {
                     Arguments.of("public class _ { public void hashCode() {} }", Boilerplate.HASHER),
                     Arguments.of("public class _ { public void toString() {} }", Boilerplate.STRING_CONVERSION),
                     Arguments.of("public class _ { public void writeObject() {} }", Boilerplate.SERIALIZER),
+                    Arguments.of("public class _ { public void readObject() {} }", Boilerplate.DESERIALIZER),
+                    Arguments.of("public class _ { public void readObjectNoData() {} }", Boilerplate.DESERIALIZER),
+                    Arguments.of("public class _ { public void clone() {} }", Boilerplate.CLONER),
+                    Arguments.of("public class _ { public void finalize() {} }", Boilerplate.FINALIZER)
+            );
+        }
+    }
+
+    @ParameterizedTest(name = "[{index}] {1}")
+    @ArgumentsSource(JavaCodeProvider.class)
+    void asEnumTest(String source, Boilerplate expected) {
+        BoilerplateEnumerator enumerator = new JavaBoilerplateEnumerator();
+        @Cleanup Parser parser = Parser.getFor(Language.JAVA);
+        @Cleanup Tree tree = parser.parse(source);
+        Node root = tree.getRootNode();
+        Node class_declaration = root.getChild(0);
+        Node class_body = class_declaration.getChildByFieldName("body");
+        Node callable_declaration = class_body.getChild(1);
+        Boilerplate actual = enumerator.asEnum(callable_declaration);
+        Assertions.assertEquals(expected, actual);
+    }
+}
