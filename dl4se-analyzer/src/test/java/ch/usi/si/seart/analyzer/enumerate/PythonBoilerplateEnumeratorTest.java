@@ -52,4 +52,82 @@ class PythonBoilerplateEnumeratorTest extends JavaBaseTest {
                             Boilerplate.FINALIZER
                     ),
                     Arguments.of(
-                            List.o
+                            List.of(
+                                    "def __eq__():",
+                                    "def __lt__():",
+                                    "def __le__():",
+                                    "def __gt__():",
+                                    "def __ge__():"
+                            ),
+                            Boilerplate.COMPARISON
+                    ),
+                    Arguments.of(
+                            List.of(
+                                    "def __neg__():",
+                                    "def __pos__():",
+                                    "def __abs__():",
+                                    "def __invert__():",
+                                    "def __round__():",
+                                    "def __floor__():",
+                                    "def __ceil__():",
+                                    "def __trunc__():"
+                            ),
+                            Boilerplate.UNARY_ARITHMETIC
+                    ),
+                    Arguments.of(
+                            List.of(
+                                    "def __add__():",
+                                    "def __sub__():",
+                                    "def __mul__():",
+                                    "def __div__():",
+                                    "def __truediv__():",
+                                    "def __floordiv__():",
+                                    "def __mod__():",
+                                    "def __pow__():",
+                                    "def __lshift__():",
+                                    "def __rshift__():",
+                                    "def __and__():",
+                                    "def __xor__():",
+                                    "def __or__():"
+                            ),
+                            Boilerplate.BINARY_ARITHMETIC
+                    ),
+                    Arguments.of(
+                            List.of(
+                                    "def __iadd__():",
+                                    "def __isub__():",
+                                    "def __imul__():",
+                                    "def __imatmul__():",
+                                    "def __itruediv__():",
+                                    "def __ifloordiv__():",
+                                    "def __imod__():",
+                                    "def __ipow__():",
+                                    "def __ilshift__():",
+                                    "def __irshift__():",
+                                    "def __iand__():",
+                                    "def __ixor__():",
+                                    "def __ior__():"
+                            ),
+                            Boilerplate.AUGMENTED_ASSIGNMENT
+                    )
+            );
+        }
+    }
+
+
+
+    @ParameterizedTest(name = "[{index}] {1}")
+    @ArgumentsSource(PythonCodeProvider.class)
+    void asEnumTest(List<String> sources, Boilerplate expected) {
+        @Cleanup Parser parser = Parser.getFor(Language.PYTHON);
+        for (String source: sources) {
+            @Cleanup Tree tree = parser.parse(source);
+            Node root = tree.getRootNode();
+            Node function_definition = root.getChild(0);
+            BoilerplateEnumerator enumerator = new PythonBoilerplateEnumerator();
+            Boilerplate actual = enumerator.asEnum(function_definition);
+            Assertions.assertEquals(expected, actual);
+        }
+    }
+
+    private static class Pyt
