@@ -130,4 +130,29 @@ class PythonBoilerplateEnumeratorTest extends JavaBaseTest {
         }
     }
 
-    private static class Pyt
+    private static class PythonCodeProviderSpecial implements ArgumentsProvider {
+
+        @Override
+        public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+            return Stream.of(
+                    Arguments.of("@something\ndef attr(self):\n    pass", null),
+                    Arguments.of("@property\ndef attr(self):\n    pass", Boilerplate.GETTER),
+                    Arguments.of("@property\n# line comment\ndef attr(self):\n    pass", Boilerplate.GETTER),
+                    Arguments.of("@attr.setter\ndef attr(self, attr):\n    pass", Boilerplate.SETTER)
+            );
+        }
+    }
+
+    @ParameterizedTest(name = "[{index}] {1}")
+    @ArgumentsSource(PythonCodeProviderSpecial.class)
+    void asEnumTestSpecial(String source, Boilerplate expected) {
+        @Cleanup Parser parser = Parser.getFor(Language.PYTHON);
+        @Cleanup Tree tree = parser.parse(source);
+        Node root = tree.getRootNode();
+        Node decorated_definition = root.getChild(0);
+        Node function_definition = decorated_definition.getChildByFieldName("definition");
+        BoilerplateEnumerator enumerator = new PythonBoilerplateEnumerator();
+        Boilerplate actual = enumerator.asEnum(function_definition);
+        Assertions.assertEquals(expected, actual);
+    }
+}
