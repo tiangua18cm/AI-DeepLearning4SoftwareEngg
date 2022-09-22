@@ -93,4 +93,12 @@ public abstract class JavaHasherTest extends JavaBaseTest {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] bytes = input.getBytes(getCharset());
         byte[] hash = md.digest(bytes);
-        StringBuilder hexBuilder = n
+        StringBuilder hexBuilder = new StringBuilder(2 * hash.length);
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexBuilder.append('0');
+            hexBuilder.append(hex);
+        }
+        return hexBuilder.toString();
+    }
+}
