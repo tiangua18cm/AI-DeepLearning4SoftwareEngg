@@ -40,3 +40,16 @@ class ContainsNonAsciiPredicateTest extends PredicateTest {
     void containsNonAsciiTest() {
         NodePredicate predicate = new ContainsNonAsciiPredicate();
         boolean result = predicate.test(tree.getRootNode());
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void anyContainsNonAscii() {
+        NodePredicate predicate = new ContainsNonAsciiPredicate();
+        Node root = tree.getRootNode();
+        Node package_declaration = root.getChild(0);
+        Node class_declaration = root.getChild(1);
+        boolean result = predicate.test(package_declaration, class_declaration);
+        Assertions.assertTrue(result);
+    }
+}
