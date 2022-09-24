@@ -33,3 +33,5 @@ class TestFilePredicateTest {
     void pathPredicateTest(Path path, boolean expected) {
         Predicate<Path> predicate = new TestFilePredicate() {};
         Assertions.assertEquals(expected, predicate.test(path));
+    }
+}
