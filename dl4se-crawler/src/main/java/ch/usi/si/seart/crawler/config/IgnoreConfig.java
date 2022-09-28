@@ -28,4 +28,26 @@ public class IgnoreConfig {
 
             @Override
             public boolean test(String name) {
-       
+                return names.contains(name);
+            }
+        };
+    }
+
+    @Bean
+    public Predicate<Path> fileFilter(IgnoreRepositoryFilesProperties properties) {
+        Collection<Predicate<Path>> predicates = new ArrayList<>();
+        Optional.ofNullable(properties.getGlobPattern())
+                .filter(Predicate.not(ObjectUtils::isEmpty))
+                .map(GlobPathMatcherPredicate::new)
+                .map(Predicate::negate)
+                .ifPresent(predicates::add);
+        Optional.ofNullable(properties.getMaxSize())
+                .filter(Predicate.not(DataSize::isNegative))
+                .map(DataSizePredicate::new)
+                .ifPresent(predicates::add);
+        Optional.ofNullable(properties.getMaxLines())
+                .map(LineCountPredicate::new)
+                .ifPresent(predicates::add);
+        return predicates.stream().reduce(ignored -> true, Predicate::and);
+    }
+}
