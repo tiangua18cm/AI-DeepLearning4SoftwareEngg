@@ -18,4 +18,19 @@ import java.util.stream.Collectors;
 @Getter
 @ConfigurationProperties(prefix = "crawler.ignore.repository", ignoreUnknownFields = false)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class IgnoreRepositoryPropert
+public class IgnoreRepositoryProperties {
+
+    Set<@NotBlank String> names;
+
+    @NestedConfigurationProperty
+    IgnoreRepositoryFilesProperties files;
+
+    @ConstructorBinding
+    public IgnoreRepositoryProperties(List<String> names, IgnoreRepositoryFilesProperties files) {
+        this.names = names.stream().collect(Collectors.collectingAndThen(
+                Collectors.toSet(),
+                Collections::unmodifiableSet
+        ));
+        this.files = files;
+    }
+}
