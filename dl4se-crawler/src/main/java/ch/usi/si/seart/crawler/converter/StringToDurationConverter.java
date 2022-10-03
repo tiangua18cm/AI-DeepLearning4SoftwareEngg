@@ -14,3 +14,4 @@ public class StringToDurationConverter implements Converter<String, Duration> {
     public Duration convert(String source) {
         return DurationStyle.detectAndParse(source);
     }
+}
