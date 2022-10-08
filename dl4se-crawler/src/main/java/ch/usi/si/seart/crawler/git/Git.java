@@ -237,4 +237,79 @@ public class Git implements AutoCloseable {
         Consumer<String> addedConsumer = singlePathConsumer(added);
         Consumer<String> deletedConsumer = singlePathConsumer(deleted);
         Consumer<String> modifiedConsumer = singlePathConsumer(modified);
-        Consumer<String> renamedConsumer = 
+        Consumer<String> renamedConsumer = doublePathConsumer(renamed);
+        Consumer<String> editedConsumer = doublePathConsumer(edited);
+        Consumer<String> copiedConsumer = doublePathConsumer(copied);
+
+        private Consumer<String> singlePathConsumer(List<Path> structure) {
+            return line -> {
+                String[] tokens = line.split("\t");
+                Path path = Path.of(tokens[1]);
+                structure.add(path);
+            };
+        }
+
+        private Consumer<String> doublePathConsumer(Map<Path, Path> structure) {
+            return line -> {
+                String[] tokens = line.split("\t");
+                Path before = Path.of(tokens[1]);
+                Path after = Path.of(tokens[2]);
+                structure.put(before, after);
+            };
+        }
+
+        private Diff(String startSHA, String endSHA) throws GitException {
+            Process process = executeGitCommand("diff", "--name-status", "--diff-filter=ADMRC", startSHA, endSHA);
+            processOutput(process);
+        }
+
+        private Diff(String startSHA, String endSHA, String... extensions) throws GitException {
+            String[] base = new String[] { "diff", "--name-status", "--diff-filter=ADMRC", startSHA, endSHA, "--" };
+            String[] command = ObjectArrays.concat(base, extensions, String.class);
+            Process process = executeGitCommand(command);
+            processOutput(process);
+        }
+
+        private void processOutput(Process process) throws GitException {
+            checkFailure(process);
+
+            String output = stringifyInputStream(process.getInputStream());
+            output.lines().forEach(line -> {
+                Consumer<String> consumer;
+                char status = line.charAt(0);
+                switch (status) {
+                    case 'A': consumer = addedConsumer; break;
+                    case 'D': consumer = deletedConsumer; break;
+                    case 'M': consumer = modifiedConsumer; break;
+                    case 'C': consumer = copiedConsumer; break;
+                    default:
+                        String type = line.split("\t")[0];
+                        if (type.equals("R100")) consumer = renamedConsumer;
+                        else if (type.matches("R0\\d\\d")) consumer = editedConsumer;
+                        else throw new IllegalArgumentException("Unknown change type: ["+type+"], in diff line: " + line);
+                }
+                consumer.accept(line);
+            });
+        }
+
+        /**
+         * @return A simplified output of the calculated diff.
+         * The percentages for copied and edited files are not preserved.
+         */
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            added.forEach(path -> builder.append("A\t").append(path).append('\n'));
+            deleted.forEach(path -> builder.append("D\t").append(path).append('\n'));
+            modified.forEach(path -> builder.append("M\t").append(path).append('\n'));
+            renamed.forEach((p1, p2) -> builder.append("R\t").append(p1).append('\t').append(p2).append('\n'));
+            copied.forEach((p1, p2) -> builder.append("C\t").append(p1).append('\t').append(p2).append('\n'));
+            edited.forEach((p1, p2) -> builder.append("E\t").append(p1).append('\t').append(p2).append('\n'));
+            return builder.toString();
+        }
+    }
+
+    private void checkFailure(Process process) throws GitException {
+        if (process.exitValue() != 0){
+            String errorMessage = stringifyInputStream(process.getErrorStream());
+            throw new Git
