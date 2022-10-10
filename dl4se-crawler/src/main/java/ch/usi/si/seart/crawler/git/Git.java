@@ -312,4 +312,37 @@ public class Git implements AutoCloseable {
     private void checkFailure(Process process) throws GitException {
         if (process.exitValue() != 0){
             String errorMessage = stringifyInputStream(process.getErrorStream());
-            throw new Git
+            throw new GitException("Operation failed for ["+name+"]:\n" + errorMessage);
+        }
+    }
+
+    @SneakyThrows({IOException.class, InterruptedException.class})
+    private Process executeGitCommand(String... args) {
+        List<String> command = new ArrayList<>();
+        command.add("git");
+        command.addAll(Arrays.asList(args));
+
+        ProcessBuilder builder = new ProcessBuilder(command);
+        builder.directory(localDir.toFile());
+        Process process = builder.start();
+        process.waitFor();
+        return process;
+    }
+
+    @SneakyThrows(IOException.class)
+    public String stringifyInputStream(InputStream source) {
+        try (Reader reader = new InputStreamReader(source)) {
+            return CharStreams.toString(reader);
+        }
+    }
+
+    @Override
+    @SneakyThrows(InterruptedException.class)
+    public void close() throws IOException {
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command("rm", "-rf", localDir.getFileName().toString());
+        builder.directory(localDir.getParent().toFile());
+        Process process = builder.start();
+        process.waitFor();
+    }
+}
