@@ -57,4 +57,9 @@ public class HttpClient {
         while (matcher.find()) {
             String rel = matcher.group(2);
             String link = matcher.group(1);
-            links.put(rel, link)
+            links.put(rel, link);
+        }
+
+        return links;
+    }
+}
