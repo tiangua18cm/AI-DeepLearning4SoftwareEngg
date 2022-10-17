@@ -136,4 +136,84 @@ class GitTest {
             Assertions.assertEquals(0, diff.getDeleted().size());
             Assertions.assertEquals(0, diff.getAdded().size());
             Assertions.assertEquals(0, diff.getModified().size());
-            Assertions.assertE
+            Assertions.assertEquals(1, diff.getRenamed().size());
+            Assertions.assertEquals(1, diff.getEdited().size());
+        }
+    }
+
+    @Test
+    void getDiffLowerBoundFilteredTest() throws IOException, GitException {
+        try (Git git = new Git(historyRepoName, tmp)) {
+            Git.Diff diff = git.getDiff("bc74b0bbd2821c4cdb0b1943f6b3afced8d49ca7", Set.of(java, python));
+            // Expected diff output:
+            // A       app.py
+            // R079    app.java    dir/app.java
+            Assertions.assertEquals(1, diff.getAdded().size());
+            Assertions.assertEquals(0, diff.getDeleted().size());
+            Assertions.assertEquals(0, diff.getModified().size());
+            Assertions.assertEquals(0, diff.getRenamed().size());
+            Assertions.assertEquals(1, diff.getEdited().size());
+
+            diff = git.getDiff("bc74b0bbd2821c4cdb0b1943f6b3afced8d49ca7", Set.of(cpp, python));
+            // Expected diff output:
+            // D       app.cpp
+            // A       app.py
+            // R100    app.c      program.c
+            Assertions.assertEquals(1, diff.getAdded().size());
+            Assertions.assertEquals(1, diff.getDeleted().size());
+            Assertions.assertEquals(0, diff.getModified().size());
+            Assertions.assertEquals(1, diff.getRenamed().size());
+            Assertions.assertEquals(0, diff.getEdited().size());
+        }
+    }
+
+    @Test
+    void getDiffTestLowerAndUpperBoundFilteredTest() throws IOException, GitException {
+        try (Git git = new Git(historyRepoName, tmp)) {
+            Git.Diff diff = git.getDiff(
+                    "bc74b0bbd2821c4cdb0b1943f6b3afced8d49ca7",
+                    "5dae826d5335bc633ce4bbae74e6b8394e563c13",
+                    Set.of(java, python)
+            );
+            // Expected diff output:
+            // A    app.py
+            Assertions.assertEquals(1, diff.getAdded().size());
+            Assertions.assertEquals(0, diff.getDeleted().size());
+            Assertions.assertEquals(0, diff.getModified().size());
+            Assertions.assertEquals(0, diff.getRenamed().size());
+            Assertions.assertEquals(0, diff.getEdited().size());
+
+            diff = git.getDiff(
+                    "bc74b0bbd2821c4cdb0b1943f6b3afced8d49ca7",
+                    "5dae826d5335bc633ce4bbae74e6b8394e563c13",
+                    Set.of(cpp, python)
+            );
+            // Expected diff output:
+            // D       app.cpp
+            // A       app.py
+            // R100    app.c      program.c
+            Assertions.assertEquals(1, diff.getAdded().size());
+            Assertions.assertEquals(1, diff.getDeleted().size());
+            Assertions.assertEquals(0, diff.getModified().size());
+            Assertions.assertEquals(1, diff.getRenamed().size());
+            Assertions.assertEquals(0, diff.getEdited().size());
+
+            diff = git.getDiff(
+                    "bc74b0bbd2821c4cdb0b1943f6b3afced8d49ca7",
+                    "5dae826d5335bc633ce4bbae74e6b8394e563c13",
+                    Set.of(java)
+            );
+            // Expected diff output:
+            //
+            Assertions.assertEquals(0, diff.getAdded().size());
+            Assertions.assertEquals(0, diff.getDeleted().size());
+            Assertions.assertEquals(0, diff.getModified().size());
+            Assertions.assertEquals(0, diff.getRenamed().size());
+            Assertions.assertEquals(0, diff.getEdited().size());
+        }
+    }
+
+    @Test
+    void getDiffSameSHATest() throws IOException, GitException {
+        try (Git git = new Git(historyRepoName, tmp)) {
+            Stri
