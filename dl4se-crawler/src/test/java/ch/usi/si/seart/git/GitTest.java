@@ -216,4 +216,49 @@ class GitTest {
     @Test
     void getDiffSameSHATest() throws IOException, GitException {
         try (Git git = new Git(historyRepoName, tmp)) {
-            Stri
+            String lastCommitSha = "bc74b0bbd2821c4cdb0b1943f6b3afced8d49ca7";
+            Git.Diff diff = git.getDiff(lastCommitSha, lastCommitSha);
+            Assertions.assertEquals(0, diff.getAdded().size());
+            Assertions.assertEquals(0, diff.getDeleted().size());
+            Assertions.assertEquals(0, diff.getModified().size());
+            Assertions.assertEquals(0, diff.getRenamed().size());
+            Assertions.assertEquals(0, diff.getEdited().size());
+        }
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @ValueSource(strings = {
+            "0000000",
+            "0000000000000000000000000000000000000000"
+    })
+    void gitDiffBadSHATest(String sha) throws IOException, GitException {
+        try (Git git = new Git(testRepoName, tmp)) {
+            Assertions.assertThrows(GitException.class, () -> git.getDiff(sha));
+        }
+    }
+
+    @Test
+    @SuppressWarnings("resource")
+    void nonEmptyDirTest() throws IOException {
+        File newFile = new File(tmp.toFile().getAbsolutePath() + File.separator + "empty_file.txt");
+        boolean created = newFile.createNewFile();
+        Assertions.assertTrue(created);
+        Assertions.assertThrows(GitException.class, () -> new Git(testRepoName, tmp, true));
+    }
+
+    @Test
+    @SuppressWarnings("resource")
+    void nonExistingRepoTest() {
+        String fakeRepoName = "dabico/fake-repo";
+        Assertions.assertThrows(GitException.class, () -> new Git(fakeRepoName, tmp, false));
+    }
+
+    @Test
+    @SuppressWarnings("resource")
+    void invalidShallowDateTest() {
+        Assertions.assertThrows(
+                GitException.class, () -> new Git(testRepoName, tmp, LocalDateTime.of(2022, 2, 14, 0, 0))
+        );
+    }
+}
