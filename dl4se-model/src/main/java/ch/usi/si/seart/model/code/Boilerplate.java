@@ -88,3 +88,42 @@ public enum Boilerplate {
      *     <li>Or</li>
      * </ul>
      * for arbitrary types.
+     */
+    BINARY_ARITHMETIC,
+    /**
+     * Includes implementations of the following assignment operations:
+     * <ul>
+     *     <li>{@code +=}</li>
+     *     <li>{@code -=}</li>
+     *     <li>{@code *=}</li>
+     *     <li>{@code @=}</li>
+     *     <li>{@code /=}</li>
+     *     <li>{@code //=}</li>
+     *     <li>{@code %=}</li>
+     *     <li>{@code **=}</li>
+     *     <li>{@code <<=}</li>
+     *     <li>{@code >>=}</li>
+     *     <li>{@code &=}</li>
+     *     <li>{@code ^=}</li>
+     *     <li>{@code |=}</li>
+     * </ul>
+     * for any arbitrary type.
+     */
+    AUGMENTED_ASSIGNMENT,
+    /**
+     * Methods that return copies of the original instance.
+     */
+    CLONER,
+    /**
+     * Methods called prior to instance garbage collection.
+     */
+    FINALIZER,
+    /**
+     * Methods that convert the instance into a storable format.
+     */
+    SERIALIZER,
+    /**
+     * Methods that reverse serialization.
+     */
+    DESERIALIZER
+}
