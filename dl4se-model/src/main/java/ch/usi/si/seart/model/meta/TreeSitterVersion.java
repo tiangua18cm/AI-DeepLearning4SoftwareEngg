@@ -45,4 +45,28 @@ public class TreeSitterVersion {
     Long id;
 
     @NotNull
-    @SHAH
+    @SHAHash
+    String sha;
+
+    @NotNull
+    @SemanticVersion
+    String tag;
+
+    @OneToMany(mappedBy = "treeSitterVersion", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @Builder.Default
+    @JsonIgnore
+    List<File> files = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TreeSitterVersion metadata = (TreeSitterVersion) o;
+        return id != null && Objects.equals(id, metadata.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sha, tag);
+    }
+}
