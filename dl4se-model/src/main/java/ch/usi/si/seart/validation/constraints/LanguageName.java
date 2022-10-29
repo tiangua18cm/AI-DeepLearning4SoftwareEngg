@@ -1,9 +1,11 @@
+
 package ch.usi.si.seart.validation.constraints;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import javax.validation.ReportAsSingleViolation;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -18,14 +20,14 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Documented
 @NotBlank
-@Alphanumeric
+@Pattern(regexp = "[\\w\\s#+-]+")
 @Constraint(validatedBy = {})
 @ReportAsSingleViolation
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
 @Retention(RUNTIME)
-public @interface FileExtension {
+public @interface LanguageName {
 
-    String message() default "{ch.usi.si.seart.validation.constraints.FileExtension.message}";
+    String message() default "{ch.usi.si.seart.validation.constraints.LanguageName.message}";
 
     Class<?>[] groups() default {};
 
