@@ -11,4 +11,6 @@ public class MailConfig {
 
     @Bean
     public MimeMessagePropertySetter mimeMessageSenderSetter(MailProperties properties) {
-        return
+        return new MimeMessageSenderSetter(properties.getUsername());
+    }
+}
