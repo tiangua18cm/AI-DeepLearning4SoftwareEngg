@@ -12,4 +12,10 @@ import java.net.URL;
 
 @Getter
 @ConfigurationProperties(prefix = "platform.website", ignoreUnknownFields = false)
-@FieldDefaults(level = AccessLevel.PRIVATE,
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@AllArgsConstructor(onConstructor_ = @ConstructorBinding)
+public class WebsiteProperties {
+
+    @NotNull
+    URL baseURL;
+}
