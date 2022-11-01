@@ -13,4 +13,38 @@ public class UserSearchDtoToSpecificationConverter implements Converter<UserSear
     
     @Override
     @NonNull
- 
+    public Specification<User> convert(UserSearchDto source) {
+        Specification<User> specification = Specification.where(null);
+        if (source.hasUid()) {
+            Specification<User> other = withUidContaining(source.getUid());
+            specification = specification.and(other);
+        }
+        if (source.hasEmail()) {
+            Specification<User> other = withEmailContaining(source.getEmail());
+            specification = specification.and(other);
+        }
+        if (source.hasOrganisation()) {
+            Specification<User> other = withOrganisationContaining(source.getOrganisation());
+            specification = specification.and(other);
+        }
+        return specification;
+    }
+
+    private Specification<User> withUidContaining(String pattern) {
+        return withStringAttributeContaining(User_.uid, pattern);
+    }
+
+    private Specification<User> withEmailContaining(String pattern) {
+        return withStringAttributeContaining(User_.email, pattern);
+    }
+
+    private Specification<User> withOrganisationContaining(String pattern) {
+        return withStringAttributeContaining(User_.organisation, pattern);
+    }
+
+    private Specification<User> withStringAttributeContaining(
+            SingularAttribute<User, String> attribute, String pattern
+    ) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get(attribute), "%" + pattern + "%");
+    }
+}
