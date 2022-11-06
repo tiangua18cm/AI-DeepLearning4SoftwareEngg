@@ -9,12 +9,12 @@ import javax.mail.MessagingException;
 
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class MimeMessageRecipientSetter implements MimeMessagePropertySetter {
+public class MimeMessageSenderSetter implements MimeMessagePropertySetter {
 
-    String recipient;
+    String sender;
 
     @Override
     public void setProperties(MimeMessageHelper mimeMessageHelper) throws MessagingException {
-        mimeMessageHelper.setTo(recipient);
+        mimeMessageHelper.setFrom(sender);
     }
 }
