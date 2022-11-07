@@ -23,4 +23,12 @@ public class TaskCleaner implements Runnable {
     public void run() {
         log.info("Cleaning up expired task files...");
         taskService.forEachNonExpired(this::run);
-        log.info(
+        log.info("Task cleaning complete!");
+    }
+
+    private void run(Task task) {
+        log.debug("Deleting export file for task: [{}]", task.getUuid());
+        task.setExpired(true);
+        fileSystemService.cleanArchive(task);
+    }
+}
