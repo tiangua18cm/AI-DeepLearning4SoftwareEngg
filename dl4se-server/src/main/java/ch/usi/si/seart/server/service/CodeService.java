@@ -20,4 +20,27 @@ import java.util.stream.Stream;
 public interface CodeService extends DatasetService<Code> {
 
     @Service
-    @FieldDefaults(level = Acces
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    @AllArgsConstructor(onConstructor_ = @Autowired)
+    class CodeServiceImpl implements CodeService {
+
+        CodeRepository codeRepository;
+
+        @Override
+        public Code getWithId(Long id) {
+            return codeRepository.findById(id).orElseThrow(() -> new CodeNotFoundException(Code_.id, id));
+        }
+
+        @Override
+        @Async
+        public Future<Long> count(Specification<Code> specification) {
+            Long count = codeRepository.count(specification);
+            return CompletableFuture.completedFuture(count);
+        }
+
+        @Override
+        public Stream<Code> stream(Specification<Code> specification) {
+            return codeRepository.streamAll(specification);
+        }
+    }
+}
