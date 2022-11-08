@@ -67,3 +67,45 @@ public interface ConfigurationService {
             Map<String, Object> map = configurations.stream().collect(DEFAULT_COLLECTOR);
             MutablePropertySources propertySources = configurableEnvironment.getPropertySources();
             propertySources.replace(
+                    CONFIGURATION_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+                    new MapPropertySource(CONFIGURATION_ENVIRONMENT_PROPERTY_SOURCE_NAME, map)
+            );
+            return map.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> entry.getValue().toString(),
+                            (ignored, value) -> value,
+                            TreeMap::new
+                    ));
+        }
+
+        @Override
+        public boolean exists(Configuration configuration) {
+            return configurableEnvironment.containsProperty(configuration.getKey());
+        }
+
+        @Override
+        public void afterPropertiesSet() {
+            initializeDefaultConfigurations();
+            initializePlatformEnvironment();
+        }
+
+        private void initializeDefaultConfigurations() {
+            platformProperties.getConfigurationDefaults().entrySet().stream()
+                    .map(entry -> Map.entry(entry.getKey(), entry.getValue().toString()))
+                    .filter(entry -> !configurationRepository.existsById(entry.getKey()))
+                    .map(entry -> new Configuration(entry.getKey(), entry.getValue()))
+                    .forEach(configurationRepository::save);
+        }
+
+        private void initializePlatformEnvironment() {
+            List<Configuration> configurations = configurationRepository.findAll();
+            Map<String, Object> map = configurations.stream().collect(DEFAULT_COLLECTOR);
+            MutablePropertySources propertySources = configurableEnvironment.getPropertySources();
+            propertySources.addAfter(
+                    StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+                    new MapPropertySource(CONFIGURATION_ENVIRONMENT_PROPERTY_SOURCE_NAME, map)
+            );
+        }
+    }
+}
