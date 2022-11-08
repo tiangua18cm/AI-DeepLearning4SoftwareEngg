@@ -46,4 +46,21 @@ public interface DatabaseService {
                     "FOR _materialized_view_name, _has_unique_index IN (" +
                         "SELECT relname, indisunique " +
                         "FROM pg_class " +
-   
+                        "INNER JOIN pg_index " +
+                            "ON pg_index.indrelid = pg_class.oid " +
+                        "WHERE relkind = 'm' " +
+                        "AND relnamespace IN (" +
+                            "SELECT oid FROM pg_namespace " +
+                            "WHERE nspname NOT LIKE 'pg_%' " +
+                            "AND nspname != 'information_schema'" +
+                        ")" +
+                    ") " +
+                    "LOOP EXECUTE 'REFRESH MATERIALIZED VIEW ' " +
+                        "|| CASE WHEN _has_unique_index THEN 'CONCURRENTLY ' ELSE '' END " +
+                        "|| _materialized_view_name; " +
+                    "END LOOP; " +
+                "END $$;"
+            ).executeUpdate();
+        }
+    }
+}
