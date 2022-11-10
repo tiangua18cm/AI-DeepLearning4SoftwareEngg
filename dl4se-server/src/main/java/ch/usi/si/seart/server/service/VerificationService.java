@@ -9,4 +9,29 @@ import org.springframework.stereotype.Service;
 
 public interface VerificationService extends TokenService<VerificationToken> {
 
-    @Servic
+    @Service
+    class VerificationServiceImpl extends AbstractTokenService<VerificationToken> {
+
+        @Autowired
+        public VerificationServiceImpl(VerificationTokenRepository tokenRepository) {
+            super(tokenRepository);
+        }
+
+        @Override
+        public VerificationToken generate(User user) {
+            return tokenRepository.save(
+                    VerificationToken.builder()
+                            .user(user)
+                            .value(randomValue())
+                            .build()
+            );
+        }
+
+        @Override
+        protected void verify(VerificationToken token) {
+            // This allows refresh in case of expiry
+            if (token.isExpired()) throw new TokenExpiredException(token);
+            tokenRepository.delete(token);
+        }
+    }
+}
