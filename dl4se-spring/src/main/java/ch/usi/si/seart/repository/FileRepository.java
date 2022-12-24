@@ -29,4 +29,5 @@ public interface FileRepository extends JpaRepository<File, Long> {
             @Param(value = "new") @NotBlank String newPath
     );
 
-    void deleteByRepo
+    void deleteByRepoAndPath(@NotNull GitRepo repo, @NotBlank String path);
+}
