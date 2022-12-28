@@ -14,4 +14,11 @@ public interface JpaStreamExecutor<T> {
 
     Stream<T> streamAll(@NonNull Sort sort);
 
-    <S extends T> Stream<S> streamAll(@NonNull Example<S> exa
+    <S extends T> Stream<S> streamAll(@NonNull Example<S> example);
+
+    <S extends T> Stream<S> streamAll(@NonNull Example<S> example, @NonNull Sort sort);
+
+    Stream<T> streamAll(@Nullable Specification<T> specification);
+
+    Stream<T> streamAll(@Nullable Specification<T> specification, @NonNull Sort sort);
+}
