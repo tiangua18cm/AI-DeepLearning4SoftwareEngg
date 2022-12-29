@@ -45,4 +45,9 @@ public abstract class AbstractDatasetProgressService implements DatasetProgressS
     }
 
     private DatasetProgress initialize() {
-        retur
+        return DatasetProgress.builder()
+                .checkpoint(startDateTime)
+                .dataset(dataset)
+                .build();
+    }
+}
