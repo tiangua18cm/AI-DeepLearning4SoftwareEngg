@@ -11,4 +11,7 @@ public abstract class Wrapper implements Transformer {
     protected abstract String getDelimiter();
 
     @Override
-    public final String apply(S
+    public final String apply(String source) {
+        return String.join(getDelimiter(), getPrefix(), source, getSuffix());
+    }
+}
