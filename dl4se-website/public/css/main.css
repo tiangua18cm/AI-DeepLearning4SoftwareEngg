@@ -21,4 +21,37 @@
 }
 
 a[target="_blank"] {
-  cursor: alias !impor
+  cursor: alias !important;
+}
+
+.d-grid {
+  display: grid !important;
+}
+
+.row-gap-2 {
+  row-gap: 0.5rem !important;
+}
+
+.column-gap-3 {
+  column-gap: 1rem !important;
+}
+
+.logo-box {
+  color: var(--light) !important;
+  background-color: var(--nav-link-color) !important;
+  padding-left: 0.5rem !important;
+  padding-right: 0.125rem !important;
+  margin-right: 0.125rem !important;
+}
+
+.logo-text {
+  color: var(--nav-link-color) !important;
+}
+
+.logo:hover .logo-box {
+  background-color: var(--nav-link-hover-color) !important;
+}
+
+.logo:hover .logo-text {
+  color: var(--nav-link-hover-color) !important;
+}
