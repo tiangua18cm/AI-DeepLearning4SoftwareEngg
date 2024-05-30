@@ -90,4 +90,92 @@ export default {
               disabled: !this.connected,
             },
             {
-   
+              name: "documentation",
+              disabled: false,
+            },
+            {
+              name: "about",
+              disabled: false,
+            },
+          ],
+          right: [
+            {
+              name: "profile",
+              disabled: !this.connected,
+            },
+            {
+              name: "search",
+              disabled: !this.connected,
+            },
+            {
+              name: "dashboard",
+              disabled: !this.connected,
+            },
+          ],
+        };
+      },
+    },
+    currentPage() {
+      return this.$route.name;
+    },
+    loggedIn() {
+      return !!this.$store.getters.getToken;
+    },
+    loginTarget() {
+      const pages = ["home", "login", "register"];
+      return pages.some(this.isOnPage) ? undefined : this.currentPage;
+    },
+  },
+  methods: {
+    isOnPage(name) {
+      return this.currentPage === name;
+    },
+    showLogOutModal() {
+      this.showConfirmModal("Log Out", "Any unsaved changes will be lost. Are you sure you want to continue?").then(
+        (confirmed) => {
+          if (confirmed) this.$store.dispatch("logOut");
+        },
+      );
+    },
+  },
+  async beforeMount() {
+    await this.$http.get("/").catch(() => {
+      this.connected = false;
+      this.appendToast(
+        "Server Connection Refused",
+        "The server is currently unreachable. Please try accessing the site later.",
+        "danger",
+      );
+    });
+  },
+  setup() {
+    useHead({
+      titleTemplate: (title) => `Data Hub${title ? " | " + title : ""}`,
+    });
+  },
+  data() {
+    return {
+      interval: undefined,
+      connected: true,
+    };
+  },
+};
+</script>
+
+<style lang="sass">
+@import "node_modules/bootstrap/scss/_functions.scss"
+@import "node_modules/bootstrap/scss/_variables.scss"
+
+#app
+  -webkit-font-smoothing: antialiased
+  -moz-osx-font-smoothing: grayscale
+
+.router-view
+  padding-top: map-get($spacers, 4)!important
+  padding-bottom: map-get($spacers, 4)!important
+
+@media (min-width: 576px)
+  .router-view
+    padding-left: map-get($spacers, 4)!important
+    padding-right: map-get($spacers, 4)!important
+</style>
