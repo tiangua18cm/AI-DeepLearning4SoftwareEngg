@@ -34,4 +34,37 @@ export default {
     const [g] = svg.children;
     g.removeAttribute("style");
     if (props.scale !== 1)
-      g.setAttribute("transform", `translate(8 8) scale(${pro
+      g.setAttribute("transform", `translate(8 8) scale(${props.scale} ${props.scale}) translate(-8 -8)`);
+
+    return createElement(
+      "svg",
+      {
+        class: {
+          "bi-identicon": true,
+          "b-icon": true,
+          bi: true,
+          ...(data.class || {}),
+          ...Object.fromEntries(data.staticClass?.split(" ").map((sc) => [sc, true]) || []),
+        },
+        attrs: {
+          height: data.attrs.height || "1em",
+          width: data.attrs.width || "1em",
+          viewBox: "0 0 16 16",
+          xmlns: "http://www.w3.org/2000/svg",
+          focusable: false,
+          role: "img",
+          ariaLabel: "identicon",
+          fill: "currentColor",
+          stroke: "currentColor",
+        },
+        domProps: {
+          innerHTML: g.outerHTML,
+        },
+        on: data.listeners,
+        directives: data.directives,
+      },
+      [],
+    );
+  },
+};
+</script>
