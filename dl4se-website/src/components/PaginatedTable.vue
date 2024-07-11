@@ -64,4 +64,67 @@
 import BDropdownSelect from "@/components/DropdownSelect";
 
 export default {
-  name
+  name: "b-paginated-table",
+  components: { BDropdownSelect },
+  props: {
+    id: {
+      type: String,
+      required: true,
+    },
+    fields: {
+      type: Array,
+      default() {
+        return [];
+      },
+    },
+    controls: {
+      type: Array,
+      default() {
+        return [];
+      },
+      validator(value) {
+        return value.every((control) => typeof control === "string");
+      },
+    },
+    primaryKey: String,
+    totalItems: {
+      type: Number,
+      required: true,
+      validator(value) {
+        return value >= 0;
+      },
+    },
+    provider: {
+      type: Function,
+      required: true,
+    },
+    refreshRate: {
+      type: Number,
+      default: -1,
+    },
+  },
+  methods: {
+    refresh() {
+      this.$root.$emit("bv::refresh::table", this.id);
+    },
+  },
+  beforeMount() {
+    if (this.refreshRate >= 0) {
+      this.intervalId = setInterval(this.refresh, this.refreshRate);
+    }
+  },
+  beforeDestroy() {
+    this.intervalId = clearInterval(this.intervalId);
+  },
+  data() {
+    return {
+      intervalId: undefined,
+      currentPage: 1,
+      perPage: 20,
+      perPageOptions: [10, 20, 50, 100],
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/component/paginated-table.sass" />
