@@ -71,3 +71,26 @@ export default {
                 const object = this.formatObjectAsTextList(value);
                 const indented = object
                   .split("\n")
+                  .map((line) => `  ${line}`)
+                  .join("\n");
+                return `- ${label}:\n${indented}`;
+              }
+            default:
+              return `- ${label}: ${value}`;
+          }
+        })
+        .join("\n");
+    },
+    formatXML(value) {
+      const xml = new DOMParser().parseFromString(value, "application/xml");
+      const xslt = new DOMParser().parseFromString(xmlFormatting, "application/xml");
+      const processor = new XSLTProcessor();
+      processor.importStylesheet(xslt);
+      const document = processor.transformToDocument(xml);
+      return new XMLSerializer().serializeToString(document);
+    },
+    startCase(value) {
+      return startCase(value?.toLowerCase() ?? "???");
+    },
+  },
+};
