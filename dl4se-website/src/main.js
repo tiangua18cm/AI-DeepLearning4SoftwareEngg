@@ -28,4 +28,11 @@ Vue.use(VueHighlight);
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
 
-Vue.component("fragment", 
+Vue.component("fragment", Fragment);
+
+new Vue({
+  router,
+  store,
+  unhead,
+  render: (h) => h(App),
+}).$mount("#app");
