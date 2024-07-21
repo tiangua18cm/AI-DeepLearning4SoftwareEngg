@@ -188,4 +188,40 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes,
   scrollBehavior: ({ hash }) => {
-    return hash
+    return hash ? { selector: hash } : undefined;
+  },
+});
+
+router.beforeEach(async (to, _from, next) => {
+  if (to.meta.public) {
+    next();
+  } else {
+    await axios
+      .get("/user")
+      .then(() => next())
+      .catch((err) => {
+        const code = err.response.status;
+        if (code === 401) {
+          const wasLoggedIn = !!router.app.$store.getters.getToken;
+          if (wasLoggedIn) {
+            router.app.$store.dispatch("logOut", to.name).then(() => {
+              router.app.$bvToast.toast("Your session has expired, please log in again.", {
+                toaster: "b-toaster-top-right",
+                title: "Logged Out",
+                variant: "secondary",
+                autoHideDelay: 3000,
+                appendToast: true,
+                solid: true,
+              });
+            });
+          } else {
+            next({ name: "login", query: { target: to.name } });
+          }
+        } else {
+          next({ name: "home" });
+        }
+      });
+  }
+});
+
+export default router;
