@@ -195,3 +195,108 @@ export default {
   components: {
     BClearableInput,
     BContentArea,
+    BDialogModal,
+    BIconIdenticon,
+    BPaginatedTable,
+  },
+  mixins: [bootstrapMixin, formatterMixin, routerMixin],
+  computed: {
+    hasConfigs() {
+      const configs = this.configTable.configs;
+      return !!Object.keys(configs).length;
+    },
+    disableSync() {
+      if (!this.hasConfigs) return true;
+      const validator = this.v$.configTable.configs;
+      return validator.$invalid || !validator.$anyDirty || this.configTable.busy;
+    },
+    tableHeight() {
+      return `${this.$screen.xl ? 370 : 380}px`;
+    },
+  },
+  methods: {
+    configDirty(key) {
+      return this.v$.configTable.configs[key].$dirty;
+    },
+    configValid(key) {
+      return !this.v$.configTable.configs[key].$invalid;
+    },
+    configState(key) {
+      return this.configDirty(key) ? this.configValid(key) : null;
+    },
+    async configUpdate() {
+      const endpoint = "/admin/configuration";
+      if (this.v$.configTable.$invalid) return;
+      this.configTable.busy = true;
+      this.$http
+        .post(endpoint, this.configTable.configs)
+        .then(() => {
+          this.appendToast("Configuration Updated", "Server configuration has been successfully updated.", "secondary");
+        })
+        .catch(() => {
+          this.appendToast(
+            "Error Updating Configuration",
+            "There was a problem updating the server configuration. Please try again.",
+            "warning",
+          );
+        })
+        .finally(() => {
+          this.configTable.busy = false;
+          this.v$.configTable.$reset();
+        });
+    },
+    async configRefresh() {
+      const endpoint = "/admin/configuration";
+      this.configTable.busy = true;
+      this.$http
+        .get(endpoint)
+        .then((res) => (this.configTable.configs = res.data))
+        .catch(() => {
+          this.appendToast(
+            "Error Fetching Configuration",
+            "There was a problem retrieving the server configuration. Please try again.",
+            "warning",
+          );
+        })
+        .finally(() => {
+          this.configTable.busy = false;
+          this.v$.configTable.$reset();
+        });
+    },
+    async shutdownServer() {
+      this.showConfirmModal(
+        "Shut Down Server",
+        `You are about to shut down the server.
+           Doing so will cause any currently executing tasks to be suspended,
+           and the API unavailable until it is brought back up.
+           Are you sure you want to continue?`,
+      )
+        .then((confirmed) => {
+          return confirmed ? this.$http.post("/actuator/shutdown") : Promise.reject();
+        })
+        .then(() =>
+          this.redirectHomeAndToast("Shutting Down Server", "The server has been successfully shut down.", "secondary"),
+        )
+        .catch(() => {
+          // TODO: Differentiate between a user close and actual failure!
+        });
+    },
+    async restartServer() {
+      const restarted = await this.showConfirmModal(
+        "Restart Server",
+        `You are about to restart the server.
+           Doing so will cause any currently executing tasks to be temporarily suspended.
+           During this time the API will also be unavailable.
+           Are you sure you want to continue?`,
+      )
+        .then((confirmed) => {
+          return confirmed ? this.$http.post("/actuator/restart") : Promise.reject(false);
+        })
+        .then(() => {
+          this.disabled = true;
+          this.appendToast(
+            "Restarting Server",
+            "Server restart has been initiated. It may take a moment before it becomes available again.",
+            "secondary",
+          );
+          r
