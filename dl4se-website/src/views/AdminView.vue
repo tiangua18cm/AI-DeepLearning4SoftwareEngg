@@ -102,4 +102,96 @@
                         <b-input
                           :id="key"
                           :state="configState(key)"
-                          :disable
+                          :disabled="configTable.busy"
+                          v-model.trim="configTable.configs[key]"
+                        />
+                      </b-td>
+                    </b-tr>
+                  </template>
+                  <template v-else>
+                    <b-tr class="b-table-empty-row bg-light">
+                      <b-td colspan="2">
+                        <div role="alert" aria-live="polite">
+                          <div class="text-center my-2">There are no records to show</div>
+                        </div>
+                      </b-td>
+                    </b-tr>
+                  </template>
+                </b-tbody>
+              </b-table-simple>
+            </b-overlay>
+            <b-container>
+              <b-row align-h="center" no-gutters>
+                <b-col cols="auto">
+                  <b-button-group>
+                    <b-button :disabled="disableSync" @click="configUpdate">
+                      <b-icon-cloud-upload />
+                      Synchronize
+                    </b-button>
+                    <b-button :disabled="configTable.busy" @click="configRefresh" class="ratio-1x1">
+                      <b-icon-arrow-clockwise shift-h="-2" rotate="45" />
+                    </b-button>
+                  </b-button-group>
+                </b-col>
+              </b-row>
+            </b-container>
+          </div>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col>
+          <h2>Server Controls</h2>
+          <b-content-area :class="{ 'gap-3': true, 'd-flex': $screen.sm, 'd-grid': !$screen.sm }">
+            <b-button :disabled="disabled" @click="shutdownServer" variant="danger">
+              <b-icon-power />
+              Shutdown
+            </b-button>
+            <b-button :disabled="disabled" @click="restartServer">
+              <b-icon-arrow-clockwise shift-h="-2" rotate="45" />
+              Restart
+            </b-button>
+            <b-button :disabled="disabled" @click="getLog" variant="primary">
+              <b-icon-file-earmark-text />
+              Log
+            </b-button>
+          </b-content-area>
+        </b-col>
+      </b-row>
+    </b-container>
+    <b-dialog-modal
+      id="user-filter-select"
+      title="Specify User Filters"
+      @hide="$root.$emit('bv::refresh::table', userTable.id)"
+    >
+      <label for="user-filter-uid">Filter by UID:</label>
+      <b-clearable-input id="user-filter-uid" v-model="userTable.filters.uid" placeholder="User ID / Username" />
+      <label for="user-filter-email">Filter by Email:</label>
+      <b-clearable-input id="user-filter-email" v-model="userTable.filters.email" placeholder="example@email.com" />
+      <label for="user-filter-organisation">Filter by Organisation:</label>
+      <b-clearable-input
+        id="user-filter-organisation"
+        v-model="userTable.filters.organisation"
+        placeholder="Organisation Name"
+      />
+    </b-dialog-modal>
+  </div>
+</template>
+
+<script>
+import axios from "@/axios";
+import { ref } from "vue";
+import useVuelidate from "@vuelidate/core";
+import { required } from "@vuelidate/validators";
+import bootstrapMixin from "@/mixins/bootstrapMixin";
+import formatterMixin from "@/mixins/formatterMixin";
+import routerMixin from "@/mixins/routerMixin";
+import BClearableInput from "@/components/ClearableInput";
+import BContentArea from "@/components/ContentArea";
+import BDialogModal from "@/components/DialogModal";
+import BIconIdenticon from "@/components/IconIdenticon";
+import BPaginatedTable from "@/components/PaginatedTable";
+
+export default {
+  components: {
+    BClearableInput,
+    BContentArea,
