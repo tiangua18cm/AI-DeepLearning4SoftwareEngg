@@ -416,4 +416,45 @@ export default {
           },
           {
             key: "organisation",
-            sortable: 
+            sortable: true,
+          },
+          {
+            key: "registered",
+            sortable: true,
+            formatter: (value) => new Date(Date.parse(value + "Z")),
+          },
+          {
+            key: "details",
+            sortable: false,
+          },
+          {
+            key: "actions",
+            sortable: false,
+          },
+        ],
+        totalItems: 0,
+      },
+    };
+  },
+  validations() {
+    const rules = { $autoDirty: true, required };
+    return this.hasConfigs
+      ? {
+          configTable: {
+            configs: Object.keys(this.configTable.configs).reduce(
+              (acc, key) => Object.assign(acc, { [key]: rules }),
+              {},
+            ),
+          },
+        }
+      : {};
+  },
+  head() {
+    return {
+      title: "Admin",
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/view/admin.sass" />
