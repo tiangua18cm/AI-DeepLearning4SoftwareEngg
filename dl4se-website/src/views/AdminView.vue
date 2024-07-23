@@ -299,4 +299,121 @@ export default {
             "Server restart has been initiated. It may take a moment before it becomes available again.",
             "secondary",
           );
-          r
+          return true;
+        })
+        .catch(() => false);
+
+      if (!restarted) return;
+      const that = this;
+      const check = setInterval(async function () {
+        await that.$http
+          .get("/")
+          .then(() => {
+            clearInterval(check);
+            that.appendToast("Server Connection Restored", "The server is back online.", "secondary");
+          })
+          .finally(() => (that.disabled = false));
+      }, 5000);
+    },
+    async getLog() {
+      return this.$http
+        .get("/actuator/logfile")
+        .then((res) => res.data)
+        .then((log) => {
+          const options = { type: "text/plain" };
+          const blob = new Blob([log], options);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "server.log";
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+    },
+    async userProvider(ctx) {
+      const params = { page: ctx.currentPage - 1, size: ctx.perPage };
+      if (ctx.sortBy) params.sort = `${ctx.sortBy},${ctx.sortDesc ? "desc" : "asc"}`;
+      const filters = this.userTable.filters;
+      if (filters.uid) params.uid = filters.uid;
+      if (filters.email) params.email = filters.email;
+      if (filters.organisation) params.organisation = filters.organisation;
+      return this.$http
+        .get("/admin/user", { params: params })
+        .then((res) => {
+          this.userTable.totalItems = res.data.total_items;
+          return res.data.items;
+        })
+        .catch(() => {
+          this.appendToast(
+            "Error Fetching User Data",
+            "There was a problem retrieving the user data. Refresh the page and try again.",
+            "warning",
+          );
+        });
+    },
+    async userAction(uid, action) {
+      const endpoint = `/admin/user/${uid}/${action}`;
+      await this.$http.post(endpoint).catch((err) => {
+        const status = err.response.status;
+        switch (status) {
+          case 401:
+            this.$store.dispatch("logOut").then(() => {
+              this.appendToast("Login Required", "Your session has expired. Please log in again.", "secondary");
+            });
+            break;
+          case 403:
+            this.$store.dispatch("logOut").then(() => {
+              this.appendToast(
+                "Access Restricted",
+                "You do not have the necessary authorization to modify the requested resource.",
+                "secondary",
+              );
+            });
+            break;
+          default:
+            this.$router.push({ name: "home" });
+            break;
+        }
+      });
+      this.$root.$emit("bv::refresh::table", this.userTable.id);
+    },
+  },
+  setup() {
+    const configTable = ref({
+      id: "config-table",
+      busy: false,
+      configs: {},
+    });
+    (async () => {
+      const endpoint = "/admin/configuration";
+      configTable.value.configs = await axios.get(endpoint).then(({ data }) => data);
+    })();
+    return {
+      v$: useVuelidate({ $autoDirty: true }),
+      configTable: configTable,
+    };
+  },
+  data() {
+    return {
+      disabled: false,
+      userTable: {
+        id: "user-table",
+        filters: {
+          uid: null,
+          email: null,
+          organisation: null,
+        },
+        fields: [
+          {
+            key: "uid",
+            label: "UID",
+            sortable: true,
+            tdClass: ["text-monospace", "text-nowrap"],
+          },
+          {
+            key: "email",
+            sortable: true,
+          },
+          {
+            key: "organisation",
+            sortable: 
