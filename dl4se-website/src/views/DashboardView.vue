@@ -162,4 +162,109 @@
       :content="detailsModal.content"
       :formatters="detailsModal.formatters"
       :tabs-align="!$screen.md ? 'center' : 'left'"
-      :footer-button-block="!$scree
+      :footer-button-block="!$screen.md"
+      @reset="
+        detailsModal.title = '';
+        detailsModal.content = {};
+      "
+    />
+    <b-dialog-modal
+      id="task-filter-select"
+      title="Specify Task Filters"
+      @hide="$root.$emit('bv::refresh::table', taskTable.id)"
+    >
+      <label for="task-filter-uuid">Filter by UUID:</label>
+      <b-clearable-input id="task-filter-uuid" v-model="taskTable.filters.uuid" placeholder="Partial / Full UUID" />
+      <p class="d-inline-block mb-2 cursor-default" @click="$refs.taskFilterStatus.$el.querySelector('button').focus()">
+        Filter by Status:
+      </p>
+      <b-dropdown-select
+        id="task-filter-status"
+        ref="taskFilterStatus"
+        aria-label="Filter by Status:"
+        v-model="taskTable.filters.status"
+        :options="[null, 'QUEUED', 'EXECUTING', 'FINISHED', 'CANCELLED', 'ERROR']"
+        placeholder="ALL"
+      />
+    </b-dialog-modal>
+  </div>
+</template>
+
+<script>
+import bootstrapMixin from "@/mixins/bootstrapMixin";
+import formatterMixin from "@/mixins/formatterMixin";
+import routerMixin from "@/mixins/routerMixin";
+import BAbbr from "@/components/Abbr";
+import BClearableInput from "@/components/ClearableInput";
+import BDetailsModal from "@/components/DetailsModal";
+import BDialogModal from "@/components/DialogModal";
+import BDropdownSelect from "@/components/DropdownSelect";
+import BIconCalendarExclamation from "@/components/IconCalendarExclamation";
+import BIconCalendarPlay from "@/components/IconCalendarPlay";
+import BIconCalendarQuestion from "@/components/IconCalendarQuestion";
+import BPaginatedTable from "@/components/PaginatedTable";
+import BContentArea from "@/components/ContentArea.vue";
+
+export default {
+  components: {
+    BContentArea,
+    BAbbr,
+    BClearableInput,
+    BDetailsModal,
+    BDialogModal,
+    BDropdownSelect,
+    BIconCalendarExclamation,
+    BIconCalendarPlay,
+    BIconCalendarQuestion,
+    BPaginatedTable,
+  },
+  mixins: [bootstrapMixin, formatterMixin, routerMixin],
+  computed: {
+    tableHeight() {
+      return `${this.$screen.xl ? 370 : 380}px`;
+    },
+  },
+  methods: {
+    statusToSquareIcon(status) {
+      switch (status) {
+        case "QUEUED":
+          return "plus-square-fill";
+        case "EXECUTING":
+          return "caret-right-square-fill";
+        case "FINISHED":
+          return "check-square-fill";
+        case "CANCELLED":
+          return "x-square-fill";
+        case "ERROR":
+          return "exclamation-square-fill";
+        default:
+          return "question-square-fill";
+      }
+    },
+    statusToCalendarIcon(status) {
+      switch (status) {
+        case "QUEUED":
+          return "b-icon-calendar-plus";
+        case "EXECUTING":
+          return "b-icon-calendar-play";
+        case "FINISHED":
+          return "b-icon-calendar-check";
+        case "CANCELLED":
+          return "b-icon-calendar-x";
+        case "ERROR":
+          return "b-icon-calendar-exclamation";
+        default:
+          return "b-icon-calendar-question";
+      }
+    },
+    async taskProvider(ctx) {
+      const params = { page: ctx.currentPage - 1, size: ctx.perPage };
+      if (ctx.sortBy) params.sort = `${ctx.sortBy},${ctx.sortDesc ? "desc" : "asc"}`;
+      const filters = this.taskTable.filters;
+      if (filters.uuid) params.uuid = filters.uuid;
+      if (filters.status) params.status = filters.status;
+      return this.$http
+        .get("/task", { params: params })
+        .then((res) => {
+          this.taskTable.totalItems = res.data.total_items;
+          r
