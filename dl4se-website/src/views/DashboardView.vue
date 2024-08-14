@@ -267,4 +267,117 @@ export default {
         .get("/task", { params: params })
         .then((res) => {
           this.taskTable.totalItems = res.data.total_items;
-          r
+          return res.data.items;
+        })
+        .catch(() => {
+          this.appendToast(
+            "Error Fetching Task Data",
+            "There was a problem retrieving the task data. Refresh the page and try again.",
+            "warning",
+          );
+        });
+    },
+    async taskCancel(uuid) {
+      const endpoint = `/task/${uuid}/cancel`;
+      await this.$http.post(endpoint).catch((err) => {
+        const status = err.response.status;
+        switch (status) {
+          case 400:
+            this.appendToast(
+              "Cannot cancel task",
+              "The task has already finished executing and can not be cancelled.",
+              "secondary",
+            );
+            break;
+          case 401:
+            this.$store.dispatch("logOut").then(() => {
+              this.appendToast("Login Required", "Your session has expired. Please log in again.", "secondary");
+            });
+            break;
+          case 403:
+            this.$store.dispatch("logOut").then(() => {
+              this.appendToast(
+                "Access Restricted",
+                "You do not have the necessary authorization to modify the requested resource.",
+                "secondary",
+              );
+            });
+            break;
+          default:
+            this.$router.push({ name: "home" });
+            break;
+        }
+      });
+      this.$root.$emit("bv::refresh::table", this.taskTable.id);
+    },
+    display(title, item, button) {
+      this.detailsModal.title = title;
+      this.detailsModal.content = item;
+      this.$root.$emit("bv::show::modal", this.detailsModal.id, button);
+    },
+  },
+  data() {
+    return {
+      detailsModal: {
+        id: "details-modal",
+        title: "",
+        content: "",
+        formatters: [
+          {
+            name: "JSON",
+            formatter: this.formatObjectAsJson,
+          },
+          {
+            name: "Text",
+            formatter: this.formatObjectAsTextList,
+          },
+        ],
+      },
+      taskTable: {
+        id: "task-table",
+        filters: {
+          uuid: null,
+          status: null,
+        },
+        fields: [
+          {
+            key: "uuid",
+            label: "UUID",
+            sortable: true,
+            tdClass: ["text-nowrap", "text-monospace"],
+          },
+          {
+            key: "status",
+            sortable: true,
+            tdClass: ["text-center"],
+          },
+          {
+            key: "submitted",
+            label: "Timeline",
+            sortable: true,
+            formatter: (_value, _key, item) => {
+              return {
+                submitted: item.submitted ? new Date(Date.parse(item.submitted + "Z")) : null,
+                started: item.started ? new Date(Date.parse(item.started + "Z")) : null,
+                finished: item.finished ? new Date(Date.parse(item.finished + "Z")) : null,
+              };
+            },
+            tdClass: ["text-center"],
+          },
+          {
+            key: "progress",
+            sortable: false,
+            formatter: (_value, _key, item) => {
+              let percentage;
+              if (item.total_results === 0) {
+                percentage = "0.00%";
+              } else if (item.status === "FINISHED" || item.processed_results > item.total_results) {
+                percentage = "100.00%";
+              } else {
+                percentage = `${((item.processed_results / item.total_results) * 100).toFixed(2)}%`;
+              }
+
+              return {
+                status: item.status,
+                percentage: percentage,
+                processed: item
