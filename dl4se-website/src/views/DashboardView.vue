@@ -380,4 +380,36 @@ export default {
               return {
                 status: item.status,
                 percentage: percentage,
-                processed: item
+                processed: item.processed_results,
+                total: item.total_results,
+              };
+            },
+          },
+          {
+            key: "size",
+            sortable: true,
+            formatter: this.formatBytes,
+            tdClass: ["text-right", "text-nowrap"],
+          },
+          {
+            key: "details",
+            sortable: false,
+          },
+          {
+            key: "actions",
+            sortable: false,
+          },
+        ],
+        totalItems: 0,
+      },
+    };
+  },
+  head() {
+    return {
+      title: "Dashboard",
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/view/dashboard.sass" />
