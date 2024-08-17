@@ -131,4 +131,111 @@ import organisationsMixin from "@/mixins/organisationsMixin";
 import bootstrapMixin from "@/mixins/bootstrapMixin";
 import BFormSubmit from "@/components/FormSubmit";
 import BIconIdenticon from "@/components/IconIdenticon";
-import BFormAutoComplete from "@/componen
+import BFormAutoComplete from "@/components/FormAutoComplete.vue";
+
+export default {
+  mixins: [routerMixin, organisationsMixin, bootstrapMixin],
+  components: {
+    BFormAutoComplete,
+    BFormSubmit,
+    BIconIdenticon,
+  },
+  computed: {
+    canUpdateUid() {
+      const invalid = this.v$.form.uid.$invalid;
+      const changed = this.form.uid !== this.user.uid;
+      return !invalid && changed;
+    },
+    canUpdateEmail() {
+      const invalid = this.v$.form.email.$invalid;
+      const changed = this.form.email !== this.user.email;
+      return !invalid && changed;
+    },
+    canUpdateOrganisation() {
+      const invalid = this.v$.form.organisation.$invalid;
+      const changed = this.form.organisation !== this.user.organisation;
+      return !invalid && changed;
+    },
+  },
+  methods: {
+    generateUsername(separator = "_") {
+      const name = getRandomName(separator);
+      const numbers = Math.floor(Math.random() * 1000);
+      return name + separator + numbers;
+    },
+    responseMapper(json) {
+      return json.map((item) => item.name);
+    },
+    updateUid() {
+      const config = { headers: { "Content-Type": "text/plain;charset=UTF-8" } };
+      this.$http
+        .put("/user/uid", this.form.uid, config)
+        .then(() => {
+          this.user.uid = this.form.uid;
+          this.appendToast("Username updated", "Your username has been successfully updated.", "secondary");
+        })
+        .catch((err) => {
+          switch (err.response.status) {
+            case 400: {
+              this.appendToast("Form Error", "Invalid form inputs.", "warning");
+              break;
+            }
+            case 409: {
+              this.appendToast("Form Error", "Username already in use.", "warning");
+              break;
+            }
+            default: {
+              this.appendToast(
+                "Server Error",
+                "An unexpected server error has occurred. Please try again later.",
+                "danger",
+              );
+            }
+          }
+        });
+    },
+    async updateEmail() {
+      const config = { headers: { "Content-Type": "text/plain;charset=UTF-8" } };
+      this.$http
+        .put("/user/email", this.form.email, config)
+        .then(() => {
+          this.user.email = this.form.email;
+          return this.$store.dispatch("logOut");
+        })
+        .then(() => {
+          this.redirectHomeAndToast(
+            "Email Change Requested",
+            `Your email has been updated.
+             We have sent you a verification link.
+             Please check the your email for further instructions.`,
+            "secondary",
+          );
+        })
+        .catch((err) => {
+          switch (err.response.status) {
+            case 400: {
+              this.appendToast("Form Error", "Invalid form inputs.", "warning");
+              break;
+            }
+            case 409: {
+              this.appendToast("Form Error", "Email already in use.", "warning");
+              break;
+            }
+            default: {
+              this.appendToast(
+                "Server Error",
+                "An unexpected server error has occurred. Please try again later.",
+                "danger",
+              );
+            }
+          }
+        });
+    },
+    async updatePassword() {
+      const payload = { email: this.user.email };
+      await this.$http.post("/user/password/forgotten", payload);
+      await this.$store.dispatch("logOut");
+      this.redirectHomeAndToast(
+        "Password Change Requested",
+        `We have initiated a password change procedure for your account.
+         Please check your email for further instructi
