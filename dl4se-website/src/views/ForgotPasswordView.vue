@@ -77,4 +77,55 @@ export default {
             case 404: {
               this.appendToast(
                 "Account Not Found",
-                "No account is associated to the specified e
+                "No account is associated to the specified email address.",
+                "warning",
+              );
+              break;
+            }
+            default: {
+              this.appendToast(
+                "Server Error",
+                "An unexpected server error has occurred. Please try again later.",
+                "danger",
+              );
+            }
+          }
+        })
+        .finally(() => {
+          this.submitted = false;
+        });
+    },
+  },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
+  data() {
+    return {
+      submitted: false,
+      form: {
+        email: null,
+      },
+    };
+  },
+  validations() {
+    return {
+      form: {
+        email: {
+          $autoDirty: true,
+          required: required,
+          format: email,
+        },
+      },
+    };
+  },
+  head() {
+    return {
+      title: "Forgot Password",
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/view/forgot-password.sass" />
