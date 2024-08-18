@@ -238,4 +238,113 @@ export default {
       this.redirectHomeAndToast(
         "Password Change Requested",
         `We have initiated a password change procedure for your account.
-         Please check your email for further instructi
+         Please check your email for further instructions.`,
+        "secondary",
+      );
+    },
+    updateOrganisation() {
+      const config = { headers: { "Content-Type": "text/plain;charset=UTF-8" } };
+      this.$http
+        .put("/user/organisation", this.form.organisation, config)
+        .then(() => {
+          this.user.organisation = this.form.organisation;
+          this.appendToast("Organisation updated", "Your organisation has been successfully updated.", "secondary");
+        })
+        .catch((err) => {
+          switch (err.response.status) {
+            case 400: {
+              this.appendToast("Form Error", "Invalid form inputs.", "warning");
+              break;
+            }
+            default: {
+              this.appendToast(
+                "Server Error",
+                "An unexpected server error has occurred. Please try again later.",
+                "danger",
+              );
+            }
+          }
+        });
+    },
+  },
+  async beforeMount() {
+    await this.$http
+      .get("/user")
+      .then(({ data }) => {
+        Object.assign(this.user, data);
+        this.form.uid = this.user.uid;
+        this.form.email = this.user.email;
+        this.form.organisation = this.user.organisation;
+        this.fetched = true;
+      })
+      .catch((err) => {
+        switch (err.response.status) {
+          case 401: {
+            this.$store.dispatch("logOut").then(() => {
+              this.appendToast("Login Required", "Your session has expired. Please log in again.", "secondary");
+            });
+            break;
+          }
+          default: {
+            this.appendToast(
+              "Server Error",
+              "An unexpected server error has occurred. Please try again later.",
+              "danger",
+            );
+          }
+        }
+      });
+  },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
+  data() {
+    return {
+      fetched: false,
+      form: {
+        uid: undefined,
+        email: undefined,
+        organisation: undefined,
+      },
+      user: {
+        uid: undefined,
+        email: undefined,
+        verified: undefined,
+        enabled: undefined,
+        role: undefined,
+        registered: undefined,
+        organisation: undefined,
+      },
+    };
+  },
+  validations() {
+    return {
+      form: {
+        uid: {
+          $autoDirty: true,
+          required: required,
+          uid: uid,
+        },
+        email: {
+          $autoDirty: true,
+          required: required,
+          email: email,
+        },
+        organisation: {
+          $autoDirty: true,
+          required: required,
+        },
+      },
+    };
+  },
+  head() {
+    return {
+      title: "Profile",
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/view/profile.sass" />
