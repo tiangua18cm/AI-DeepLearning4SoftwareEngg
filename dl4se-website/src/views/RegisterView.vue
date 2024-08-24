@@ -113,4 +113,130 @@
 <script>
 import useVuelidate from "@vuelidate/core";
 import { email, required, sameAs } from "@vuelidate/validators";
-import { pass
+import { password } from "@/validators";
+import routerMixin from "@/mixins/routerMixin";
+import organisationsMixin from "@/mixins/organisationsMixin";
+import bootstrapMixin from "@/mixins/bootstrapMixin";
+import BFormAutoComplete from "@/components/FormAutoComplete";
+import BFormInputPassword from "@/components/FormInputPassword";
+import BFormSubmit from "@/components/FormSubmit";
+
+export default {
+  mixins: [routerMixin, organisationsMixin, bootstrapMixin],
+  components: {
+    BFormAutoComplete,
+    BFormInputPassword,
+    BFormSubmit,
+  },
+  methods: {
+    responseMapper(json) {
+      return json.map((item) => item.name);
+    },
+    async autofillOrganisation() {
+      const validator = this.v$.form.email;
+      const dirty = validator.$dirty;
+      const valid = !validator.$invalid;
+      if (!dirty || !valid) return;
+      const email = validator.$model;
+      const [, domain] = email.split("@");
+      const organisation = await this.$http.get(`/organisation/${domain}`).then(({ data }) => data?.name);
+      if (!organisation) return;
+      this.form.organisation = organisation;
+    },
+    async register() {
+      this.submitted = true;
+      const payload = {
+        email: this.form.email,
+        password: this.form.password,
+        organisation: this.form.organisation,
+      };
+      await this.$http
+        .post("/user/register", payload)
+        .then(() => {
+          this.redirectHomeAndToast(
+            "Account Created",
+            "Your account has been created. We have sent you a verification link. Please check your email.",
+            "secondary",
+          );
+        })
+        .catch((err) => {
+          switch (err.response.status) {
+            case 400: {
+              this.appendToast("Form Error", "Invalid form inputs.", "warning");
+              break;
+            }
+            case 409: {
+              this.appendToast("Form Error", "Email already in use.", "warning");
+              break;
+            }
+            default: {
+              this.appendToast(
+                "Server Error",
+                "An unexpected server error has occurred. Please try again later.",
+                "danger",
+              );
+            }
+          }
+        })
+        .finally(() => {
+          this.submitted = false;
+        });
+    },
+  },
+  beforeRouteEnter(_to, _from, next) {
+    next((vm) => {
+      const token = vm.$store.getters.getToken;
+      if (token) vm.$router.replace({ name: "home" });
+    });
+  },
+  setup() {
+    return {
+      v$: useVuelidate(),
+    };
+  },
+  data() {
+    return {
+      submitted: false,
+      form: {
+        email: null,
+        password: null,
+        confirm: null,
+        organisation: null,
+      },
+    };
+  },
+  validations() {
+    return {
+      form: {
+        email: {
+          $autoDirty: true,
+          required: required,
+          format: email,
+        },
+        password: {
+          $autoDirty: true,
+          required: required,
+          format: password,
+        },
+        confirm: {
+          $autoDirty: true,
+          required: required,
+          format: password,
+          sameAs: sameAs(this.form.password),
+        },
+        organisation: {
+          $autoDirty: true,
+          required: required,
+        },
+      },
+    };
+  },
+  head() {
+    return {
+      title: "Register",
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/view/register.sass" />
