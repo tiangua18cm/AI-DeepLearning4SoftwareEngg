@@ -152,3 +152,19 @@ export default {
         },
         confirm: {
           $autoDirty: true,
+          required: required,
+          format: password,
+          sameAs: sameAs(this.form.password),
+        },
+      },
+    };
+  },
+  head() {
+    return {
+      title: "Reset Password",
+    };
+  },
+};
+</script>
+
+<style scoped lang="sass" src="@/assets/styles/view/reset-password.sass" />
