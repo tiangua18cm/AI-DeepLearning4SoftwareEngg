@@ -88,4 +88,83 @@ export default {
       return this.apiCall("/statistics/code/size");
     },
     async totalCodeLines() {
-      return th
+      return this.apiCall("/statistics/code/lines");
+    },
+    async totalTasksSize() {
+      return this.apiCall("/statistics/tasks/size");
+    },
+    async reposByLanguage() {
+      return this.apiCall("/statistics/languages/repos");
+    },
+    async filesByLanguage() {
+      return this.apiCall("/statistics/languages/files");
+    },
+    async funcsByLanguage() {
+      return this.apiCall("/statistics/languages/functions");
+    },
+  },
+  async mounted() {
+    await Promise.all([
+      this.totalUsers(),
+      this.totalRepos(),
+      this.totalFiles(),
+      this.totalFuncs(),
+      this.totalTasks(),
+      this.totalCodeSize(),
+      this.totalCodeLines(),
+      this.totalTasksSize(),
+    ])
+      .then(
+        ([
+          totalUsers,
+          totalRepos,
+          totalFiles,
+          totalFunctions,
+          totalTasks,
+          totalCodeSize,
+          totalCodeLines,
+          totalTaskSize,
+        ]) => {
+          this.count.users = totalUsers;
+          this.count.repos = totalRepos;
+          this.count.files = totalFiles;
+          this.count.funcs = totalFunctions;
+          this.count.tasks = totalTasks;
+
+          this.code.size = totalCodeSize;
+          this.code.lines = totalCodeLines;
+
+          this.tasks = totalTaskSize;
+
+          this.loading = false;
+        },
+      )
+      .catch(() => {
+        // TODO 03.11.22: Migrate this to a router guard?
+        this.$router.replace({ name: "home" });
+      });
+  },
+  data() {
+    return {
+      loading: true,
+      count: {
+        users: undefined,
+        repos: undefined,
+        files: undefined,
+        funcs: undefined,
+        tasks: undefined,
+      },
+      code: {
+        size: undefined,
+        lines: undefined,
+      },
+      tasks: undefined,
+    };
+  },
+  head() {
+    return {
+      title: "Statistics",
+    };
+  },
+};
+</script>
