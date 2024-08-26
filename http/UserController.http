@@ -26,4 +26,44 @@ Content-Type: application/json
 }
 
 ### GET /user/verify
-GET localhost:8080/api/user/verify?token
+GET localhost:8080/api/user/verify?token={{verify_token}}
+
+### GET /user/verify/resend
+GET localhost:8080/api/user/verify/resend?token={{verify_token}}
+
+### POST /user/password/forgotten
+POST localhost:8080/api/user/password/forgotten
+Content-Type: application/json
+
+{
+  "email": "dozren@yahoo.com"
+}
+
+### POST /user/password/reset
+POST localhost:8080/api/user/password/reset?token={{pass_reset_token}}
+Content-Type: application/json
+
+{
+  "password": "22022onaguL"
+}
+
+### PUT /user/uid
+PUT localhost:8080/api/user/uid
+Content-Type: text/plain;charset=UTF-8
+Authorization: Bearer {{token}}
+
+ozozozoz
+
+### PUT /user/email
+PUT localhost:8080/api/user/email
+Content-Type: text/plain;charset=UTF-8
+Authorization: Bearer {{token}}
+
+ozren.dabic@usi.ch
+
+### PUT /user/organisation
+PUT localhost:8080/api/user/organisation
+Content-Type: text/plain;charset=UTF-8
+Authorization: Bearer {{token}}
+
+Università della Svizzera italiana
